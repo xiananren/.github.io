@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Hexo</title>
+  
+  
+  <link href="http://example.com/atom.xml" rel="self"/>
+  
+  <link href="http://example.com/"/>
+  <updated>2023-01-14T15:46:06.015Z</updated>
+  <id>http://example.com/</id>
+  
+  <author>
+    <name>John Doe</name>
+    
+  </author>
+  
+  <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title></title>
+    <link href="http://example.com/2023/02/01/%E5%90%BE%E7%88%B1%E8%AE%B0%E5%BD%95/"/>
+    <id>http://example.com/2023/02/01/%E5%90%BE%E7%88%B1%E8%AE%B0%E5%BD%95/</id>
+    <published>2023-02-01T11:51:26.299Z</published>
+    <updated>2023-01-14T15:46:06.015Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="反调试挑战"><a href="#反调试挑战" class="headerlink" title="反调试挑战"></a>反调试挑战</h1><p>这个挑战主要就是native层的反调试，java层就是执行的正常运行，也就是过掉反调试后的正确输出</p><p>直接看so文件</p><p>注意这里得看armeabi-v7a的那个so，因为实际运行的是这个，原因我还不算很清楚。不过这个地方卡了我超级久，因为我patch的是armeabi的so，然后运行的时候和没patch一样</p><p>首先我们直接用android_server的话程序无法加载，根本attach不上去。我们首先分析JNI_Onload和init_array，这些是在so加载的时候运行的</p><p><img src="F:\Typora\picture\image-20230114221555520.png" alt="image-20230114221555520"></p><p>看到这里注册了native函数，我们点进第三个参数看看</p><p>发现了这个函数</p><p><img src="F:\Typora\picture\image-20230114221653448.png" alt="image-20230114221653448"></p><p>可以看到，这里是判断的23946端口(0x5d8a)，如果这个端口被占用了就退出</p><p>转换一下数据结构</p><p><img src="F:\Typora\picture\image-20230114221857257.png" alt="image-20230114221857257"></p><p>我们发现这里有成功的逻辑，所以我们不能全部patch，把exit patch掉即可过掉此处反调试</p><p>然后看JNI_Onload，发现有一个奇怪的函数</p><p><img src="F:\Typora\picture\image-20230114221947673.png" alt="image-20230114221947673"></p><p>逻辑是ps列出所有进程然后查询有无对应的调试的进程</p><p><img src="F:\Typora\picture\image-20230114222011083.png" alt="image-20230114222011083"></p><p>直接把调用它的这个地方nop掉即可。注意这里有个巨坑，就是patch一个指令为nop，如果这个指令是4个byte，你可能只会patch2个byte为nop，而不是4个。剩下两个byte会和下一个指令组合。十分离谱。</p><p>最后检查init_array</p><p>果不其然一个pthread_create，直接看它的执行的线程的函数</p><p><img src="F:\Typora\picture\image-20230114222221121.png" alt="image-20230114222221121"></p><p>查看当前进程的state，也就是状态。第6行对应的是tracePid，是检测当前是否被trace的一个值。如果是1就是被调试。直接让这个函数一进来就返回就过掉了。</p><p>patch后用apktool重打包，然后添加签名再装到手机中，运行发现成功弹出胜利窗口</p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h1 id=&quot;反调试挑战&quot;&gt;&lt;a href=&quot;#反调试挑战&quot; class=&quot;headerlink&quot; title=&quot;反调试挑战&quot;&gt;&lt;/a&gt;反调试挑战&lt;/h1&gt;&lt;p&gt;这个挑战主要就是native层的反调试，java层就是执行的正常运行，也就是过掉反调试后的正确输出&lt;/p&gt;
+&lt;p&gt;直</summary>
+      
+    
+    
+    
+    
+  </entry>
+  
+</feed>

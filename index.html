@@ -83,7 +83,10 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h1 id="反调试挑战"><a href="#反调试挑战" class="headerlink" title="反调试挑战"></a>反调试挑战</h1><p>这个挑战主要就是native层的反调试，java层就是执行的正常运行，也就是过掉反调试后的正确输出</p>
+        <hr>
+<p>title:反调试挑战分析<br>date:2023-02-01<br>tags:frida</p>
+<hr>
+<h1 id="反调试挑战"><a href="#反调试挑战" class="headerlink" title="反调试挑战"></a>反调试挑战</h1><p>这个挑战主要就是native层的反调试，java层就是执行的正常运行，也就是过掉反调试后的正确输出</p>
 <p>直接看so文件</p>
 <p>注意这里得看armeabi-v7a的那个so，因为实际运行的是这个，原因我还不算很清楚。不过这个地方卡了我超级久，因为我patch的是armeabi的so，然后运行的时候和没patch一样</p>
 <p>首先我们直接用android_server的话程序无法加载，根本attach不上去。我们首先分析JNI_Onload和init_array，这些是在so加载的时候运行的</p>
@@ -109,7 +112,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2023/02/01/%E5%90%BE%E7%88%B1%E8%AE%B0%E5%BD%95/" data-id="cldllytlh00000cvvcs4l88wx" data-title="" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2023/02/01/%E5%90%BE%E7%88%B1%E8%AE%B0%E5%BD%95/" data-id="cldlm3s1y0000ysvv8jzhh255" data-title="" class="article-share-link">Share</a>
       
       
       
